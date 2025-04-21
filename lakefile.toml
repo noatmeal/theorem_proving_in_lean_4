@@ -4,7 +4,3 @@ defaultTargets = ["theorem_proving_in_lean_4"]
 
 [[lean_lib]]
 name = "TheoremProvingInLean4"
-
-[[lean_exe]]
-name = "theorem_proving_in_lean_4"
-root = "Main"
