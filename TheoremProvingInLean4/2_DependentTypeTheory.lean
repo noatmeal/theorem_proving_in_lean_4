@@ -356,3 +356,108 @@ def consDef (α : Type) (a : α) (as : List α) : List α :=
 #check consDef Nat        -- Nat → List Nat → List Nat
 #check consDef Bool       -- Bool → List Bool → List Bool
 #check consDef            -- (α : Type) → α → List α → List α
+
+#check @List.cons    -- {α : Type u_1} → α → List α → List α
+#check @List.nil     -- {α : Type u_1} → List α
+#check @List.length  -- {α : Type u_1} → List α → Nat
+#check @List.append  -- {α : Type u_1} → List α → List α → List α
+
+universe w v
+
+def j (α : Type w) (β : α → Type v) (a : α) (b : β a) : (a : α) × β a :=
+  ⟨a, b⟩
+
+def k (α : Type w) (β : α → Type v) (a : α) (b : β a) : Σ a : α, β a :=
+  Sigma.mk a b
+
+def h1 (x : Nat) : Nat :=
+  (j Type (fun α => α) Nat x).2
+
+#eval h1 5 -- 5
+
+def h2 (x : Nat) :=
+  (k Type (fun α => α) Nat x).1
+
+#check h2 5 -- Type
+
+--------------------------------------------------------------------------
+---Implicit Arguments-----------------------------------------------------
+--------------------------------------------------------------------------
+
+universe y
+def Lst (α : Type y) : Type y := List α
+def Lst.cons (α : Type y) (a : α) (as : Lst α) : Lst α := List.cons a as
+def Lst.nil (α : Type y) : Lst α := List.nil
+def Lst.append (α : Type y) (as bs : Lst α) : Lst α := List.append as bs
+#check Lst          -- Lst.{y} (α : Type y) : Type y
+#check Lst.cons     -- Lst.cons.{y} (α : Type y) (a : α) (as : Lst α) : Lst α
+#check Lst.nil      -- Lst.nil.{y} (α : Type y) : Lst α
+#check Lst.append   -- Lst.append.{y} (α : Type y) (as bs : Lst α) : Lst α
+
+#check Lst.cons Nat 0 (Lst.nil Nat)
+
+def as : Lst Nat := Lst.nil Nat
+def bs : Lst Nat := Lst.cons Nat 5 (Lst.nil Nat)
+
+#check Lst.append Nat as bs
+
+-- Nicer with implicit arguments.
+
+#check Lst.cons _ 0 (Lst.nil _)
+
+def as1 : Lst Nat := Lst.nil _
+def bs2 : Lst Nat := Lst.cons _ 5 (Lst.nil _)
+
+#check Lst.append _ as bs
+
+-- Even nicer with implicit curly bracket notation
+universe z
+def Lst1 (α : Type z) : Type z := List α
+
+def Lst1.cons {α : Type z} (a : α) (as : Lst1 α) : Lst1 α := List.cons a as
+def Lst1.nil {α : Type z} : Lst1 α := List.nil
+def Lst1.append {α : Type z} (as bs : Lst1 α) : Lst1 α := List.append as bs
+
+#check Lst1.cons 0 Lst1.nil
+
+def as2 : Lst1 Nat := Lst1.nil
+def bs3 : Lst1 Nat := Lst1.cons 5 Lst1.nil
+
+#check Lst1.append as2 bs3
+
+universe z_1
+def ident {α : Type z_1} (x : α) := x
+
+#check ident         -- ?m → ?m
+#check ident 1       -- Nat
+#check ident "hello" -- String
+#check @ident        -- {α : Type u_1} → α → α
+
+universe z_2
+
+section
+  variable {α : Type z_2}
+  variable (x : α)
+  def ident1 := x
+end
+
+#check ident1
+#check ident1 4
+#check ident1 "hello"
+
+#check List.nil               -- List ?m
+#check id                     -- ?m → ?m
+
+#check (List.nil : List Nat)  -- List Nat
+#check (id : Nat → Nat)       -- Nat → Nat
+
+#check 2            -- Nat
+#check (2 : Nat)    -- Nat
+#check (2 : Int)    -- Int
+
+#check @id        -- {α : Sort u_1} → α → α
+#check @id Nat    -- Nat → Nat
+#check @id Bool   -- Bool → Bool
+
+#check @id Nat 1     -- Nat
+#check @id Bool true -- Bool
